@@ -3,59 +3,42 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/d0ku/distributed_math/base"
 )
 
-func expressionHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	jsn, err := ioutil.ReadAll(r.Body)
-	fmt.Println(string(jsn))
-	if err != nil {
-		r := base.Response{base.FailureReadBody, 1}
-		m, err := json.Marshal(r)
-		if err != nil {
-			log.Println("Could not read body json")
+func expressionHandler(w http.ResponseWriter, r *http.Request, e base.Expression) {
+	var result int
+	if e.HasOperator() {
+		exp := e.(*base.ExpressionOperation)
+		switch exp.Op {
+		case base.Add:
+			result = base.SolveExpression("http://localhost:8081", exp)
+			// ask adder
 		}
-		fmt.Fprintf(w, string(m))
-		return
+		// assign result =
+		// send result in response
+	} else {
+		// special case
+		exp := e.(*base.ExpressionSingle)
+		res, err := strconv.ParseInt(exp.Content, 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		result = int(res)
 	}
-
-	req := base.Expression{}
-	err = json.Unmarshal(jsn, &req)
+	res := base.Response{base.Success, result}
+	jsn, err := json.Marshal(res)
 	if err != nil {
-		r := base.Response{base.FailureParseJSON, 2}
-		m, err := json.Marshal(r)
-		if err != nil {
-			log.Println("Could not parse response json")
-		}
-		fmt.Fprintf(w, string(m))
-		return
-	}
-
-	res := base.Response{base.Success, req.Solve()}
-	jsn, err = json.Marshal(res)
-	if err != nil {
-		r := base.Response{base.FailureCreateJSON, 3}
-		m, err := json.Marshal(r)
-		if err != nil {
-			log.Println("Could not create response json")
-		}
-		fmt.Fprintf(w, string(m))
-		return
+		base.CreateError(w, r)
 	}
 
 	fmt.Fprintf(w, string(jsn))
 }
 
 func main() {
-	exp := base.Expression{1, 2, '*'}
-	jsn, _ := json.Marshal(exp)
-	fmt.Println(string(jsn))
-	http.HandleFunc("/", expressionHandler)
+	http.HandleFunc("/", base.HandlerWrapper(expressionHandler))
 	http.ListenAndServe(":8080", nil)
 }
