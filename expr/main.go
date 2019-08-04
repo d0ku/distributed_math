@@ -1,14 +1,14 @@
+//go:generate ragel -Z lex.rl
+//go:generate goyacc -o parser.go -p "pars" parser.y
+//#go:generate stringer -type=CommandType
+
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"strconv"
-
-	"github.com/d0ku/distributed_math/base"
 )
 
+/*
 func expressionHandler(w http.ResponseWriter, r *http.Request, e *base.ExpressionSingle) {
 	var result int
 	fmt.Println(e)
@@ -40,8 +40,12 @@ func expressionHandler(w http.ResponseWriter, r *http.Request, e *base.Expressio
 
 	fmt.Fprintf(w, string(jsn))
 }
+*/
 
 func main() {
-	http.HandleFunc("/", base.ExprWrapper(expressionHandler))
-	http.ListenAndServe(":8080", nil)
+	//http.HandleFunc("/", base.ExprWrapper(expressionHandler))
+	//http.ListenAndServe(":8080", nil)
+	content := []byte("  2 + 2 + 2")
+	res := parsParse(newLexer(content))
+	fmt.Println(res)
 }
