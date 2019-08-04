@@ -9,8 +9,11 @@ import (
 	"github.com/d0ku/distributed_math/base"
 )
 
-func expressionHandler(w http.ResponseWriter, r *http.Request, e base.Expression) {
+func expressionHandler(w http.ResponseWriter, r *http.Request, e *base.ExpressionSingle) {
 	var result int
+	fmt.Println(e)
+
+	// DO MATCHING HERE
 	if e.HasOperator() {
 		exp := e.(*base.ExpressionOperation)
 		switch exp.Op {
@@ -39,6 +42,6 @@ func expressionHandler(w http.ResponseWriter, r *http.Request, e base.Expression
 }
 
 func main() {
-	http.HandleFunc("/", base.HandlerWrapper(expressionHandler))
+	http.HandleFunc("/", base.ExprWrapper(expressionHandler))
 	http.ListenAndServe(":8080", nil)
 }

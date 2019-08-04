@@ -11,8 +11,8 @@ func main() {
 	url := os.Args[1]
 	fmt.Println("URL:>", url)
 
-	first := &base.ArgumentNumber{1}
-	second := &base.ArgumentNumber{2}
+	first := base.ArgumentUnion{IsNumber: true, Number: 1}
+	second := base.ArgumentUnion{IsNumber: true, Number: 2}
 	exp := &base.ExpressionOperation{first, second, base.Add}
 
 	base.SolveExpression(url, exp)

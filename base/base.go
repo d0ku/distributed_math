@@ -29,27 +29,11 @@ type Response struct {
 	Result int
 }
 
-type ArgumentNumber struct {
-	Value int
+type ArgumentUnion struct {
+	Number   int
+	Expr     ExpressionSingle
+	IsNumber bool
 }
-
-func (a *ArgumentNumber) IsNumber() bool {
-	return true
-}
-
-type ArgumentExpr struct {
-	Expr ExpressionSingle
-}
-
-func (a *ArgumentExpr) IsNumber() bool {
-	return false
-}
-
-type Argument interface {
-	// IsNumber allows to differentiate between number (int value) and not yet resolved expression.
-	IsNumber() bool
-}
-
 type ExpressionSingle struct {
 	Content string
 }
@@ -59,8 +43,8 @@ func (e *ExpressionSingle) HasOperator() bool {
 }
 
 type ExpressionOperation struct {
-	First  Argument
-	Second Argument
+	First  ArgumentUnion
+	Second ArgumentUnion
 	Op     Operator
 }
 
@@ -92,7 +76,7 @@ func CreateError(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(m))
 }
 
-func HandlerWrapper(f func(w http.ResponseWriter, r *http.Request, req Expression)) func(http.ResponseWriter, *http.Request) {
+func ExprWrapper(f func(w http.ResponseWriter, r *http.Request, expres *ExpressionSingle)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -109,22 +93,43 @@ func HandlerWrapper(f func(w http.ResponseWriter, r *http.Request, req Expressio
 			return
 		}
 
-		var req Expression
+		reqOne := ExpressionSingle{}
+		err = json.Unmarshal(jsn, &reqOne)
+		if err != nil {
+			ParseError(w, r)
+			return
+		}
+
+		f(w, r, &reqOne)
+	}
+}
+
+func OperationWrapper(f func(w http.ResponseWriter, r *http.Request, expres *ExpressionOperation)) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		jsn, err := ioutil.ReadAll(r.Body)
+		fmt.Println(string(jsn))
+		if err != nil {
+			log.Println("Could not read body json")
+			r := Response{FailureReadBody, 0}
+			m, err := json.Marshal(r)
+			if err != nil {
+				log.Println("Could not create error json")
+			}
+			fmt.Fprintf(w, string(m))
+			return
+		}
+
 		reqOne := ExpressionOperation{}
 		err = json.Unmarshal(jsn, &reqOne)
 		if err != nil {
-			reqTwo := ExpressionSingle{}
-			err = json.Unmarshal(jsn, &reqTwo)
-			if err != nil {
-				ParseError(w, r)
-				return
-			}
-			req = &reqTwo
-		} else {
-			req = &reqOne
+			log.Println(err)
+			ParseError(w, r)
+			return
 		}
 
-		f(w, r, req)
+		f(w, r, &reqOne)
 	}
 }
 

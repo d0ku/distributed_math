@@ -9,21 +9,20 @@ import (
 	"github.com/d0ku/distributed_math/base"
 )
 
-func expressionHandler(w http.ResponseWriter, r *http.Request, reqRec base.Expression) {
+func expressionHandler(w http.ResponseWriter, r *http.Request, req *base.ExpressionOperation) {
 	log.Println("Adder got request")
-	req := reqRec.(*base.ExpressionOperation)
 	fChan := make(chan int, 1)
 	sChan := make(chan int, 1)
-	if req.First.IsNumber() {
-		fChan <- (req.First.(*base.ArgumentNumber)).Value
+	if req.First.IsNumber {
+		fChan <- req.First.Number
 	} else {
-		sChan <- base.SolveExpression("http://localhost:8000", &(req.First.(*base.ArgumentExpr)).Expr)
+		sChan <- base.SolveExpression("http://localhost:8000", &req.First.Expr)
 	}
 
-	if req.Second.IsNumber() {
-		sChan <- (req.Second.(*base.ArgumentNumber)).Value
+	if req.Second.IsNumber {
+		sChan <- req.Second.Number
 	} else {
-		sChan <- base.SolveExpression("http://localhost:8000", &(req.Second.(*base.ArgumentExpr)).Expr)
+		sChan <- base.SolveExpression("http://localhost:8000", &req.Second.Expr)
 	}
 
 	res := base.Response{base.Success, <-fChan + <-sChan}
@@ -37,6 +36,6 @@ func expressionHandler(w http.ResponseWriter, r *http.Request, reqRec base.Expre
 }
 
 func main() {
-	http.HandleFunc("/", base.HandlerWrapper(expressionHandler))
+	http.HandleFunc("/", base.OperationWrapper(expressionHandler))
 	http.ListenAndServe(":8081", nil)
 }
