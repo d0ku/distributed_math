@@ -45,7 +45,7 @@ func expressionHandler(w http.ResponseWriter, r *http.Request, e *base.Expressio
 func main() {
 	//http.HandleFunc("/", base.ExprWrapper(expressionHandler))
 	//http.ListenAndServe(":8080", nil)
-	content := []byte("  2 + 2 + 2")
-	res := parsParse(newLexer(content))
-	fmt.Println(res)
+	content := []byte("  2 + 2 + 2 * (2+3)")
+	parsParse(newLexer(content))
+	fmt.Println(result)
 }
