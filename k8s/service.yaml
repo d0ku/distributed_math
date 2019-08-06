@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: expr
+  namespace: distributed-math
+spec:
+  type: NodePort
+  selector:
+    app: expr
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adder
+  namespace: distributed-math
+spec:
+  type: ClusterIP
+  selector:
+    app: adder
+  ports:
+  - protocol: TCP
+    port: 8081
+    targetPort: 8081
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subtracter
+  namespace: distributed-math
+spec:
+  type: ClusterIP
+  selector:
+    app: subtracter
+  ports:
+  - protocol: TCP
+    port: 8082
+    targetPort: 8082
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multiplier
+  namespace: distributed-math
+spec:
+  type: ClusterIP
+  selector:
+    app: multiplier
+  ports:
+  - protocol: TCP
+    port: 8083
+    targetPort: 8083
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: divider
+  namespace: distributed-math
+spec:
+  type: ClusterIP
+  selector:
+    app: divider
+  ports:
+  - protocol: TCP
+    port: 8084
+    targetPort: 8084

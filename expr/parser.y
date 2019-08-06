@@ -1,12 +1,10 @@
 %{
 package main
 
-/*
 import (
     "os"
     "github.com/d0ku/distributed_math/base"
 )
-*/
 
 // result is used to store parsing result
 var result int
@@ -36,19 +34,24 @@ expression:
 simple_expression:
     expression ADD expression
     {
-        $$ = $1 + $3
+        exp := base.ExpressionOperation{base.ArgumentUnion{Number: $1, IsNumber: true}, base.ArgumentUnion{Number: $3, IsNumber: true}, base.Add}
+        $$ = base.SolveExpression(os.Getenv("ADDER_URL"), &exp)
     }
 |   expression SUBT expression
     {
-        $$ = $1 - $3
+        exp := base.ExpressionOperation{base.ArgumentUnion{Number: $1, IsNumber: true}, base.ArgumentUnion{Number: $3, IsNumber: true}, base.Sub}
+        $$ = base.SolveExpression(os.Getenv("SUBT_URL"), &exp)
     }
 |   expression MULT expression
     {
-        $$ = $1 * $3
+        exp := base.ExpressionOperation{base.ArgumentUnion{Number: $1, IsNumber: true}, base.ArgumentUnion{Number: $3, IsNumber: true}, base.Mult}
+        $$ = base.SolveExpression(os.Getenv("MULT_URL"), &exp)
     }
 |   expression DIV expression
     {
-        $$ = $1 / $3
+        exp := base.ExpressionOperation{base.ArgumentUnion{Number: $1, IsNumber: true}, base.ArgumentUnion{Number: $3, IsNumber: true}, base.Div}
+        $$ = base.SolveExpression(os.Getenv("DIV_URL"), &exp)
+
     }
 |   LPAREN expression RPAREN
     {

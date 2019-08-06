@@ -8,12 +8,16 @@ import (
 )
 
 func main() {
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: app_name url expression")
+		fmt.Println("eg ./tester https://math.d0ku.org '2+2*2'")
+		return
+	}
 	url := os.Args[1]
+	expr := os.Args[2]
 	fmt.Println("URL:>", url)
 
-	first := base.ArgumentUnion{IsNumber: true, Number: 1}
-	second := base.ArgumentUnion{IsNumber: true, Number: 2}
-	exp := &base.ExpressionOperation{first, second, base.Add}
+	exp := &base.ExpressionSingle{expr}
 
 	base.SolveExpression(url, exp)
 }

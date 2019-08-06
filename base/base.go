@@ -17,6 +17,7 @@ const (
 	FailureReadBody
 	FailureParseJSON
 	FailureCreateJSON
+	FailureInterpretExpression
 
 	Add Operator = iota
 	Sub

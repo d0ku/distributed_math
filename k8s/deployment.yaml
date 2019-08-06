@@ -1,0 +1,134 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: expr
+  namespace: distributed-math
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: expr
+    spec:
+      containers:
+      - name: expr
+        image: d0ku/distributed_math-expr:0.1
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 20m
+            memory: 20Mi
+        env:
+        - name: "ADDER_URL"
+          value: "http://adder.distributed-math.svc.cluster.local:8081"
+        - name: "SUBT_URL"
+          value: "http://subtracter.distributed-math.svc.cluster.local:8082"
+        - name: "MULT_URL"
+          value: "http://multiplier.distributed-math.svc.cluster.local:8083"
+        - name: "DIV_URL"
+          value: "http://divider.distributed-math.svc.cluster.local:8084"
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: adder
+  namespace: distributed-math
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: adder
+    spec:
+      containers:
+      - name: adder
+        image: d0ku/distributed_math-adder:0.1
+        ports:
+        - containerPort: 8081
+        resources:
+          limits:
+            cpu: 10m
+            memory: 10Mi
+        env:
+        - name: "EXPR_URL"
+          value: "http://expr.distributed-math.svc.cluster.local:8080"
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: subtracter
+  namespace: distributed-math
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: subtracter
+    spec:
+      containers:
+      - name: subtracter
+        image: d0ku/distributed_math-subtracter:0.1
+        ports:
+        - containerPort: 8082
+        resources:
+          limits:
+            cpu: 10m
+            memory: 10Mi
+        env:
+        - name: "EXPR_URL"
+          value: "http://expr.distributed-math.svc.cluster.local:8080"
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: multiplier
+  namespace: distributed-math
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: multiplier
+    spec:
+      containers:
+      - name: multiplier
+        image: d0ku/distributed_math-multiplier:0.1
+        ports:
+        - containerPort: 8083
+        resources:
+          limits:
+            cpu: 10m
+            memory: 10Mi
+        env:
+        - name: "EXPR_URL"
+          value: "http://expr.distributed-math.svc.cluster.local:8080"
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: divider
+  namespace: distributed-math
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: divider
+    spec:
+      containers:
+      - name: divider
+        image: d0ku/distributed_math-divider:0.1
+        ports:
+        - containerPort: 8084
+        resources:
+          limits:
+            cpu: 10m
+            memory: 10Mi
+        env:
+        - name: "EXPR_URL"
+          value: "http://expr.distributed-math.svc.cluster.local:8080"

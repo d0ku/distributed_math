@@ -5,47 +5,39 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/d0ku/distributed_math/base"
 )
 
-/*
 func expressionHandler(w http.ResponseWriter, r *http.Request, e *base.ExpressionSingle) {
-	var result int
-	fmt.Println(e)
+	var jsn []byte
+	var err error
 
-	// DO MATCHING HERE
-	if e.HasOperator() {
-		exp := e.(*base.ExpressionOperation)
-		switch exp.Op {
-		case base.Add:
-			result = base.SolveExpression("http://localhost:8081", exp)
-			// ask adder
-		}
-		// assign result =
-		// send result in response
-	} else {
-		// special case
-		exp := e.(*base.ExpressionSingle)
-		res, err := strconv.ParseInt(exp.Content, 10, 64)
+	log.Println("Got request: " + e.Content)
+	content := []byte(e.Content)
+	if parsParse(newLexer(content)) == 0 {
+		res := base.Response{base.Success, result}
+		jsn, err = json.Marshal(res)
 		if err != nil {
-			panic(err)
+			base.CreateError(w, r)
 		}
-		result = int(res)
+		fmt.Fprintf(w, string(jsn))
+	} else {
+		res := base.Response{base.FailureInterpretExpression, result}
+		jsn, err = json.Marshal(res)
+		if err != nil {
+			base.CreateError(w, r)
+		}
+		fmt.Fprintf(w, string(jsn))
 	}
-	res := base.Response{base.Success, result}
-	jsn, err := json.Marshal(res)
-	if err != nil {
-		base.CreateError(w, r)
-	}
-
-	fmt.Fprintf(w, string(jsn))
+	log.Println("Send response:" + string(jsn))
 }
-*/
 
 func main() {
-	//http.HandleFunc("/", base.ExprWrapper(expressionHandler))
-	//http.ListenAndServe(":8080", nil)
-	content := []byte("  2 + 2 + 2 * (2+3)")
-	parsParse(newLexer(content))
-	fmt.Println(result)
+	http.HandleFunc("/", base.ExprWrapper(expressionHandler))
+	http.ListenAndServe(":8080", nil)
 }

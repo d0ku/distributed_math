@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/d0ku/distributed_math/base"
 )
@@ -16,13 +17,13 @@ func expressionHandler(w http.ResponseWriter, r *http.Request, req *base.Express
 	if req.First.IsNumber {
 		fChan <- req.First.Number
 	} else {
-		sChan <- base.SolveExpression("http://localhost:8000", &req.First.Expr)
+		sChan <- base.SolveExpression(os.Getenv("EXPR_URL"), &req.First.Expr)
 	}
 
 	if req.Second.IsNumber {
 		sChan <- req.Second.Number
 	} else {
-		sChan <- base.SolveExpression("http://localhost:8000", &req.Second.Expr)
+		sChan <- base.SolveExpression(os.Getenv("EXPR_URL"), &req.Second.Expr)
 	}
 
 	res := base.Response{base.Success, <-fChan / <-sChan}
